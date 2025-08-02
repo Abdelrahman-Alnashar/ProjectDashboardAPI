@@ -5,13 +5,12 @@ namespace ProjectDashboardAPI.Models
 
 	public class User
 	{
-		public int Id { get; set; }
+		public Guid Id { get; set; }
 
 		[Required]
 		public string Name { get; set; } = string.Empty;
 
-		[Required]
-		[EmailAddress]
+		[Required, EmailAddress]
 		public string Email { get; set; } = string.Empty;
 
 		[Required]
@@ -23,6 +22,9 @@ namespace ProjectDashboardAPI.Models
 		public string? RefreshToken { get; set; }
 
 		public DateTime? RefreshTokenExpiresAt { get; set; }
+
+        public ICollection<ProjectUser>? ProjectUsers { get; set; }
+		public ICollection<TaskUser>? TaskUsers { get; set; }
 
     }
 }

@@ -14,6 +14,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var config = builder.Configuration;
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
