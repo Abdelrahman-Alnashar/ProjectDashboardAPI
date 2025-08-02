@@ -51,7 +51,7 @@ namespace ProjectDashboardAPI.Controllers
             });
 
 
-            return Ok(new { Token = accessToken });
+            return Ok(new { Token = accessToken, User = user });
 
         }
 
@@ -80,7 +80,7 @@ namespace ProjectDashboardAPI.Controllers
                 Expires = DateTimeOffset.UtcNow.AddDays(1)
             });
 
-            return Ok(new { Token = newAccessToken });
+            return Ok(new { Token = newAccessToken, User = user });
          
             
         }
