@@ -4,8 +4,8 @@ namespace ProjectDashboardAPI.Models
 {
     public class ProjectTask
     {
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
+        public int Id { get; set; }
+        public int UserId { get; set; }
         [Required, MaxLength(150)]
         public string Title { get; set; }
 
@@ -16,7 +16,7 @@ namespace ProjectDashboardAPI.Models
         public DateTime? Deadline { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-        public Guid ProjectId { get; set; }
+        public int ProjectId { get; set; }
         public Project Project { get; set; }
         public ICollection<TaskUser> TaskUsers { get; set; } = new List<TaskUser>();
     }

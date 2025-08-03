@@ -66,7 +66,7 @@ namespace ProjectDashboardAPI.Controllers
             if (userIdClaim == null)
                 return Unauthorized();
 
-            var userId = Guid.Parse(userIdClaim);
+            var userId = int.Parse(userIdClaim);
             Console.WriteLine(userId);
             var user = _context.Users
                 .Where(u => u.Id == userId)

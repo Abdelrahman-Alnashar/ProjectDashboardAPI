@@ -84,7 +84,7 @@ namespace ProjectDashboardAPI.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult GetProject(Guid id)
+        public IActionResult GetProject(int id)
         {
             var project = _context.Projects
                 .Where(p => p.Id == id)

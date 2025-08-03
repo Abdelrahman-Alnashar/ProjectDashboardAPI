@@ -11,7 +11,7 @@ namespace ProjectDashboardAPI.Dtos
         public DateTime? Deadline { get; set; }
 
         [Required]
-        public Guid ProjectId { get; set; }
+        public int ProjectId { get; set; }
 
         public List<int> TaskUsers { get; set; } = new();
 
