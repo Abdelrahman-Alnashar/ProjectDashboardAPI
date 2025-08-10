@@ -66,6 +66,15 @@ namespace ProjectDashboardAPI.Controllers
             _context.Projects.Add(project);
             _context.SaveChanges();
 
+            var projectUser = new ProjectUser
+            {
+                UserId = dto.User_id,
+                ProjectId = project.Id
+            };
+
+            _context.ProjectUsers.Add(projectUser);
+            _context.SaveChanges();
+
             return CreatedAtAction(nameof(GetAll), new { id = project.Id }, new
             {
                 project.Id,
