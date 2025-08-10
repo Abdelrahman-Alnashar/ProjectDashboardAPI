@@ -16,7 +16,7 @@ namespace ProjectDashboardAPI.Data
 
         public DbSet<User> Users => Set<User>();
 
-        public DbSet<ProjectUser> Projectusers { get; set; }
+        public DbSet<ProjectUser> ProjectUsers { get; set; }
 
         public DbSet<ProjectTask> ProjectTasks { get; set; }
 

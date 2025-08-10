@@ -14,6 +14,6 @@
 
         public List<int> TaskUsers { get; set; }
 
-
+        public int ProjectId { get; set; }
     }
 }
