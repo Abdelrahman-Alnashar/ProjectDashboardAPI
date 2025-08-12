@@ -3,6 +3,8 @@ using ProjectDashboardAPI.Models;
 using ProjectDashboardAPI.Data;
 using ProjectDashboardAPI.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace ProjectDashboardAPI.Controllers
 {
@@ -23,7 +25,7 @@ namespace ProjectDashboardAPI.Controllers
         public IActionResult GetAll()
         {
             var tasks = _context.ProjectTasks
-                .Select(t => new TaskDto
+                .Select(t => new ProjectTaskDto
                 {
                     Id = t.Id,
                     Title = t.Title,
@@ -31,7 +33,12 @@ namespace ProjectDashboardAPI.Controllers
                     Status = t.Status,
                     Deadline = t.Deadline,
                     ProjectId = t.ProjectId,
-                    TaskUsers = t.TaskUsers.Select(u => u.UserId).ToList()
+                    TaskUsers = t.TaskUsers
+                        .Select(tu => new TaskUserDto
+                        {
+                            UserId = tu.UserId,
+                            Name = tu.User.Name // Assuming you want to include the user's name
+                        }).ToList()
                 })
                 .ToList();
 
@@ -40,20 +47,36 @@ namespace ProjectDashboardAPI.Controllers
 
         // POST: api/projecttasks
         [HttpPost]
-        public IActionResult Create([FromBody] CreateTaskDto dto)
+        public IActionResult Create([FromBody] CreateProjectTaskDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            Console.WriteLine(userIdClaim);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
 
             var task = new ProjectTask
             {
                 Title = dto.Title,
                 Description = dto.Description,
-                Status = dto.Status,
+                Status = 1,
                 Deadline = dto.Deadline,
                 ProjectId = dto.ProjectId,
-                TaskUsers = dto.TaskUsers.Select(userId => new TaskUser { UserId = userId }).ToList()
+                UserId = userId,
+                TaskUsers = dto.TaskUsers.Select(uid => new TaskUser { UserId = uid }).ToList()
+
             };
+
+            // Now link TaskUsers via navigation
+            // task.TaskUsers = dto.TaskUsers.Select(userId => new TaskUser
+            // {
+            //     UserId = userId,
+            //     Task = task
+            // }).ToList();
 
             _context.ProjectTasks.Add(task);
             _context.SaveChanges();
@@ -62,19 +85,23 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public IActionResult GetTask(int id)
         {
             var task = _context.ProjectTasks
                 .Where(t => t.Id == id)
-                .Select(t => new TaskDto
+                .Select(t => new ProjectTaskDto
                 {
                     Id = t.Id,
                     Title = t.Title,
                     Description = t.Description,
                     Status = t.Status,
                     Deadline = t.Deadline,
-                    ProjectId = t.ProjectId,
-                    TaskUsers = t.TaskUsers.Select(u => u.UserId).ToList()
+                    TaskUsers = t.TaskUsers
+                        .Select(tu => new TaskUserDto
+                        {
+                            UserId = tu.UserId,
+                            Name = tu.User.Name
+                        }).ToList()
                 })
                 .FirstOrDefault();
 
@@ -85,7 +112,7 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] CreateTaskDto dto)
+        public IActionResult Update(int id, [FromBody] CreateProjectTaskDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -96,7 +123,6 @@ namespace ProjectDashboardAPI.Controllers
 
             task.Title = dto.Title;
             task.Description = dto.Description;
-            task.Status = dto.Status;
             task.Deadline = dto.Deadline;
             task.ProjectId = dto.ProjectId;
             task.TaskUsers = dto.TaskUsers.Select(userId => new TaskUser { UserId = userId }).ToList();

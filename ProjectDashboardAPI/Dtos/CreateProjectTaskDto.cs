@@ -2,14 +2,11 @@
 
 namespace ProjectDashboardAPI.Dtos
 {
-    public class CreateTaskDto
+    public class CreateProjectTaskDto
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public int Status { get; set; } = 1;
-
         public DateTime? Deadline { get; set; }
-
         [Required]
         public int ProjectId { get; set; }
 

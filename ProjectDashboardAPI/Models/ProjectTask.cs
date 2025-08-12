@@ -12,7 +12,7 @@ namespace ProjectDashboardAPI.Models
         [MaxLength(1000)]
         public string Description { get; set; }
         public int Status { get; set; }
-        public string StatusName => ((Enums.TaskStatus)Status).ToString();
+        public string StatusName => ((Enums.ProjectTaskStatus)Status).ToString();
         public DateTime? Deadline { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
