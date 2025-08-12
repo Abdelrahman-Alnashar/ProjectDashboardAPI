@@ -61,10 +61,10 @@ namespace ProjectDashboardAPI.Data
                 .WithMany(tu => tu.TaskUsers)
                 .HasForeignKey(tu => tu.UserId);
 
-            modelBuilder.Entity<ProjectTask>()
-                .HasOne<User>()
-                .WithMany()
-                .HasForeignKey(t => t.UserId);
+            // modelBuilder.Entity<ProjectTask>()
+            //     .HasOne<User>()
+            //     .WithMany()
+            //     .HasForeignKey(t => t.UserId);
 
         }
 

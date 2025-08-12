@@ -37,7 +37,7 @@ namespace ProjectDashboardAPI.Controllers
 
         // POST: api/projectusers
         [HttpPost]
-        public IActionResult Create([FromBody] CreateTaskDto dto)
+        public IActionResult Create([FromBody] CreateProjectTaskDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

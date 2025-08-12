@@ -23,8 +23,8 @@ namespace ProjectDashboardAPI.Models
 
 		public DateTime? RefreshTokenExpiresAt { get; set; }
 
-        public ICollection<ProjectUser>? ProjectUsers { get; set; }
-		public ICollection<TaskUser>? TaskUsers { get; set; }
+        public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
+		public ICollection<TaskUser> TaskUsers { get; set; } = new List<TaskUser>();
 
     }
 }
