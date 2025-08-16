@@ -37,7 +37,7 @@ namespace ProjectDashboardAPI.Controllers
                         .Select(tu => new TaskUserDto
                         {
                             UserId = tu.UserId,
-                            Name = tu.User.Name // Assuming you want to include the user's name
+                            Name = tu.User.Name
                         }).ToList()
                 })
                 .ToList();
@@ -53,7 +53,6 @@ namespace ProjectDashboardAPI.Controllers
                 return BadRequest(ModelState);
 
             var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-            Console.WriteLine(userIdClaim);
             if (userIdClaim == null)
                 return Unauthorized();
 
@@ -68,20 +67,33 @@ namespace ProjectDashboardAPI.Controllers
                 ProjectId = dto.ProjectId,
                 UserId = userId,
                 TaskUsers = dto.TaskUsers.Select(uid => new TaskUser { UserId = uid }).ToList()
-
             };
-
-            // Now link TaskUsers via navigation
-            // task.TaskUsers = dto.TaskUsers.Select(userId => new TaskUser
-            // {
-            //     UserId = userId,
-            //     Task = task
-            // }).ToList();
 
             _context.ProjectTasks.Add(task);
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetAll), new { id = task.Id }, task);
+            var createdTaskDto = _context.ProjectTasks
+                .Where(pt => pt.Id == task.Id)
+                .Select(pt => new ProjectTaskDto
+                {
+                    Id = pt.Id,
+                    ProjectId = pt.ProjectId,
+                    Title = pt.Title,
+                    Description = pt.Description,
+                    Status = pt.Status,
+                    Deadline = pt.Deadline,
+                    CreatedAt = pt.CreatedAt,
+                    TaskUsers = pt.TaskUsers
+                        .Select(tu => new TaskUserDto
+                        {
+                            UserId = tu.UserId,
+                            TaskId = tu.TaskId,
+                            Name = tu.User.Name
+                        }).ToList()
+                })
+                .FirstOrDefault();
+
+            return CreatedAtAction(nameof(GetAll), new { id = createdTaskDto.Id }, createdTaskDto);
         }
 
         [HttpGet("{id}")]

@@ -1,11 +1,13 @@
-﻿namespace ProjectDashboardAPI.Dtos
+﻿using ProjectDashboardAPI.Enums;
+
+namespace ProjectDashboardAPI.Dtos
 {
     public class CreateProjectDto
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int User_id { get; set; }
-        public int Status { get; set; }
+        public int Status { get; set; } = 1;
         public string Prog_lang { get; set; } = string.Empty;
         public int Star_count { get; set; }
         public bool IsPublic { get; set; } = true;

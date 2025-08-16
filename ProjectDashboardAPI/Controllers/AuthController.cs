@@ -42,11 +42,15 @@ namespace ProjectDashboardAPI.Controllers
 
             var refreshToken = Guid.NewGuid().ToString();
 
+            user.RefreshToken = refreshToken;
+            _appDbContext.SaveChanges();
+
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
+                Secure = false, // allow localhost (set true in production!)
+                // SameSite = SameSiteMode.None, // allow cross-site requests from React
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(1)
             });
 
