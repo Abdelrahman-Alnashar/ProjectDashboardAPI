@@ -50,7 +50,7 @@ namespace ProjectDashboardAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
             Console.WriteLine(userIdClaim);
             if (userIdClaim == null)
@@ -155,13 +155,35 @@ namespace ProjectDashboardAPI.Controllers
                                     TaskId = tu.TaskId,
                                     Name = tu.User.Name
                                 }).ToList(),
-                            
+
                         }).ToList()
                 })
                 .FirstOrDefault();
 
             if (project == null)
                 return NotFound();
+
+            return Ok(project);
+        }
+
+        [Authorize]
+        [HttpPut("{id}")]
+        public IActionResult UpdateProject(int id, [FromBody] UpdateProjectDto dto)
+        {
+            var project = _context.Projects.FirstOrDefault(p => p.Id == id);
+            if (project == null)
+            {
+                return NotFound("Project not found.");
+            }
+
+            
+            project.Name = dto.Name;
+            project.Description = dto.Description;
+            project.Prog_lang = dto.Prog_lang;
+            project.Tags = dto.Tags;
+            project.UpdatedAt = DateTime.UtcNow;
+
+            _context.SaveChanges();
 
             return Ok(project);
         }
