@@ -176,7 +176,7 @@ namespace ProjectDashboardAPI.Controllers
                 return NotFound("Project not found.");
             }
 
-            
+
             project.Name = dto.Name;
             project.Description = dto.Description;
             project.Prog_lang = dto.Prog_lang;
@@ -186,6 +186,22 @@ namespace ProjectDashboardAPI.Controllers
             _context.SaveChanges();
 
             return Ok(project);
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProject(int id)
+        {
+            var project = _context.Projects.FirstOrDefault(p => p.Id == id);
+            if (project == null)
+            {
+                return NotFound("Project not found.");
+            }
+
+            _context.Projects.Remove(project);
+            _context.SaveChanges();
+
+            return NoContent();
         }
     }
 }
