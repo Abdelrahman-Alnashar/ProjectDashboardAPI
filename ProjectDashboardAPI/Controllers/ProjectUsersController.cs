@@ -53,5 +53,29 @@ namespace ProjectDashboardAPI.Controllers
 
             return CreatedAtAction(nameof(GetAll), new { id = projectUser.UserId }, projectUser);
         }
+
+        // POST: api/projectusers/{projectId}/addUser/{userId}
+        [HttpPost("{id}/addUser/{userId}")]
+        public IActionResult AddUserToProject(int id, int userId)
+        {
+            var project = _context.Projects.Find(id);
+            if (project == null)
+                return NotFound();
+
+            var user = _context.Users.Find(userId);
+            if (user == null)
+                return NotFound();
+
+            var projectUser = new ProjectUser
+            {
+                ProjectId = id,
+                UserId = userId
+            };
+
+            _context.ProjectUsers.Add(projectUser);
+            _context.SaveChanges();
+
+            return Ok(new { message = "User added to project successfully." });
+        }
     }
 }
