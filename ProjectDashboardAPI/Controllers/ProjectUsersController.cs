@@ -81,7 +81,7 @@ namespace ProjectDashboardAPI.Controllers
         [HttpDelete("{id}/removeUser/{userId}")]
         public IActionResult RemoveUserFromProject(int id, int userId)
         {
-            var projectUser = _context.ProjectUser
+            var projectUser = _context.ProjectUsers
                 .FirstOrDefault(pu => pu.ProjectId == id && pu.UserId == userId);
             if (projectUser == null)
                 return NotFound();
