@@ -77,5 +77,19 @@ namespace ProjectDashboardAPI.Controllers
 
             return Ok(new { message = "User added to project successfully." });
         }
+
+        [HttpDelete("{id}/removeUser/{userId}")]
+        public IActionResult RemoveUserFromProject(int id, int userId)
+        {
+            var projectUser = _context.ProjectUsers
+                .FirstOrDefault(pu => pu.ProjectId == id && pu.UserId == userId);
+            if (projectUser == null)
+                return NotFound();
+
+            _context.ProjectUsers.Remove(projectUser);
+            _context.SaveChanges();
+
+            return Ok(new { message = "User removed from project successfully." });
+        }
     }
 }
