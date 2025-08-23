@@ -17,5 +17,7 @@ namespace ProjectDashboardAPI.Dtos
         public List<TaskUserDto> TaskUsers { get; set; } = new();
 
         public int ProjectId { get; set; }
+        public string ProjectName { get; set; }
+        public List<TaskCommentDto> TaskComments { get; set; } = new();
     }
 }

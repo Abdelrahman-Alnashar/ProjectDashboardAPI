@@ -16,15 +16,16 @@ namespace ProjectDashboardAPI.Models
 		[Required]
 		[MinLength(8)]
 		public string Password { get; set; } = string.Empty;
-        
+
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 		public string? RefreshToken { get; set; }
 
 		public DateTime? RefreshTokenExpiresAt { get; set; }
 
-        public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
+		public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 		public ICollection<TaskUser> TaskUsers { get; set; } = new List<TaskUser>();
+		public ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
 
     }
 }
