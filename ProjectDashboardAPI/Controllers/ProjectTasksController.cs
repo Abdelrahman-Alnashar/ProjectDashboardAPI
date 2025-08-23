@@ -46,8 +46,8 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         // POST: api/projecttasks
-        [HttpPost]
-        public IActionResult Create([FromBody] CreateProjectTaskDto dto)
+        [HttpPost("{id}/addTask")]
+        public IActionResult AddTaskToProject(int id, [FromBody] CreateProjectTaskDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -64,7 +64,7 @@ namespace ProjectDashboardAPI.Controllers
                 Description = dto.Description,
                 Status = 1,
                 Deadline = dto.Deadline,
-                ProjectId = dto.ProjectId,
+                ProjectId = id,
                 UserId = userId,
                 TaskUsers = dto.TaskUsers.Select(uid => new TaskUser { UserId = uid }).ToList()
             };
@@ -77,7 +77,7 @@ namespace ProjectDashboardAPI.Controllers
                 .Select(pt => new ProjectTaskDto
                 {
                     Id = pt.Id,
-                    ProjectId = pt.ProjectId,
+                    ProjectId = id,
                     Title = pt.Title,
                     Description = pt.Description,
                     Status = pt.Status,
@@ -96,11 +96,15 @@ namespace ProjectDashboardAPI.Controllers
             return CreatedAtAction(nameof(GetAll), new { id = createdTaskDto.Id }, createdTaskDto);
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetTask(int id)
+        [HttpGet("{projectId}/{taskId}")]
+        public IActionResult GetTask(int projectId, int taskId)
         {
+            var project = _context.Projects.Find(projectId);
+            if (project == null)
+                return NotFound();
+
             var task = _context.ProjectTasks
-                .Where(t => t.Id == id)
+                .Where(t => t.Id == taskId && t.ProjectId == projectId)
                 .Select(t => new ProjectTaskDto
                 {
                     Id = t.Id,
@@ -108,11 +112,21 @@ namespace ProjectDashboardAPI.Controllers
                     Description = t.Description,
                     Status = t.Status,
                     Deadline = t.Deadline,
+                    ProjectName = project.Name,
                     TaskUsers = t.TaskUsers
                         .Select(tu => new TaskUserDto
                         {
                             UserId = tu.UserId,
                             Name = tu.User.Name
+                        }).ToList(),
+                    TaskComments = t.TaskComments
+                        .Select(tc => new TaskCommentDto
+                        {
+                            Id = tc.Id,
+                            TaskId = tc.TaskId,
+                            UserId = tc.UserId,
+                            Content = tc.Content,
+                            CreatedAt = tc.CreatedAt
                         }).ToList()
                 })
                 .FirstOrDefault();
@@ -143,6 +157,57 @@ namespace ProjectDashboardAPI.Controllers
 
             return NoContent();
 
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var task = _context.ProjectTasks.Find(id);
+            if (task == null)
+                return NotFound();
+
+            _context.ProjectTasks.Remove(task);
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        [HttpPost("{taskId}/comments")]
+        public IActionResult AddComment(int taskId, [FromBody] CreateTaskCommentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var task = _context.ProjectTasks.Find(taskId);
+            if (task == null)
+                return NotFound();
+
+            var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
+
+            var comment = new TaskComment
+            {
+                Content = dto.Content,
+                UserId = userId,
+                ProjectTask = task
+            };
+
+            _context.TaskComments.Add(comment);
+            _context.SaveChanges();
+
+            return CreatedAtAction(nameof(GetTask),
+                new { projectId = task.ProjectId, taskId = task.Id },
+                new TaskCommentDto
+                {
+                    Id = comment.Id,
+                    TaskId = task.Id,
+                    UserId = comment.UserId,
+                    Content = comment.Content,
+                    CreatedAt = comment.CreatedAt
+                });
         }
     }
 }

@@ -19,5 +19,7 @@ namespace ProjectDashboardAPI.Models
         public int ProjectId { get; set; }
         public Project Project { get; set; }
         public ICollection<TaskUser> TaskUsers { get; set; } = new List<TaskUser>();
+
+        public ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
     }
 }

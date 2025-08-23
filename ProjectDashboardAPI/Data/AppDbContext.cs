@@ -12,6 +12,10 @@ namespace ProjectDashboardAPI.Data
 
         }
 
+//         rm -rf Migrations
+// dotnet ef migrations add InitialCreate
+// dotnet ef database update
+
         public DbSet<Project> Projects => Set<Project>();
 
         public DbSet<User> Users => Set<User>();
@@ -21,6 +25,7 @@ namespace ProjectDashboardAPI.Data
         public DbSet<ProjectTask> ProjectTasks { get; set; }
 
         public DbSet<TaskUser> TaskUsers { get; set; }
+        public DbSet<TaskComment> TaskComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +65,16 @@ namespace ProjectDashboardAPI.Data
                 .HasOne(t => t.User)
                 .WithMany(tu => tu.TaskUsers)
                 .HasForeignKey(tu => tu.UserId);
+
+            modelBuilder.Entity<TaskComment>()
+                .HasOne(tc => tc.ProjectTask)
+                .WithMany(t => t.TaskComments)
+                .HasForeignKey(tc => tc.TaskId);
+                
+            modelBuilder.Entity<TaskComment>()
+                .HasOne(tc => tc.User)
+                .WithMany(u => u.TaskComments)
+                .HasForeignKey(tc => tc.UserId);
 
             // modelBuilder.Entity<ProjectTask>()
             //     .HasOne<User>()
