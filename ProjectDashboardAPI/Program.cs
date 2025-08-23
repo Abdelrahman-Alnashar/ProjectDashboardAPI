@@ -41,7 +41,7 @@ var fullPath = Path.GetFullPath(dbPath);
 Console.WriteLine($" Using database at: {fullPath}");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite($"Data Source={fullPath}"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddCors(options =>
 {

@@ -29,6 +29,18 @@ namespace ProjectDashboardAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties()
+                            .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?)))
+                {
+                    property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                        v => v.ToUniversalTime(),
+                        v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+                }
+            }
+
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Project>()
