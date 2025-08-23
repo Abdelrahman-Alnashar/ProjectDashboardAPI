@@ -12,7 +12,7 @@ namespace ProjectDashboardAPI.Dtos
         public string StatusName => ((ProjectTaskStatus)Status).ToString(); //add enum later
 
         public DateTime? Deadline { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<TaskUserDto> TaskUsers { get; set; } = new();
 

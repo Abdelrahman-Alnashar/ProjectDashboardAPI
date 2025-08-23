@@ -125,6 +125,7 @@ namespace ProjectDashboardAPI.Controllers
                             Id = tc.Id,
                             TaskId = tc.TaskId,
                             UserId = tc.UserId,
+                            UserName = tc.User.Name,
                             Content = tc.Content,
                             CreatedAt = tc.CreatedAt
                         }).ToList()
@@ -192,11 +193,14 @@ namespace ProjectDashboardAPI.Controllers
             {
                 Content = dto.Content,
                 UserId = userId,
-                ProjectTask = task
+                ProjectTask = task,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.TaskComments.Add(comment);
             _context.SaveChanges();
+
+            var user = _context.Users.FirstOrDefault(user => user.Id == userId);
 
             return CreatedAtAction(nameof(GetTask),
                 new { projectId = task.ProjectId, taskId = task.Id },
@@ -205,9 +209,49 @@ namespace ProjectDashboardAPI.Controllers
                     Id = comment.Id,
                     TaskId = task.Id,
                     UserId = comment.UserId,
+                    UserName = user.Name,
                     Content = comment.Content,
                     CreatedAt = comment.CreatedAt
                 });
+        }
+
+        [HttpPut("{taskId}/updateComment/{commentId}")]
+        public IActionResult UpdateComment(int taskId, int commentId, [FromBody] CreateTaskCommentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var comment = _context.TaskComments
+                .FirstOrDefault(c => c.Id == commentId && c.TaskId == taskId);
+
+            if (comment == null)
+                return NotFound("Comment not found for this task");
+
+            comment.Content = dto.Content;
+            comment.CreatedAt = DateTime.UtcNow;
+
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                comment.Content,
+            });
+
+        }
+
+        [HttpDelete("{taskId}/deleteComment/{commentId}")]
+        public IActionResult DeleteComment(int taskId, int commentId)
+        {
+            var comment = _context.TaskComments
+                .FirstOrDefault(c => c.Id == commentId && c.TaskId == taskId);
+
+            if (comment == null)
+                return NotFound("Comment not found to be deleted");
+
+            _context.TaskComments.Remove(comment);
+            _context.SaveChanges();
+
+            return NoContent();
         }
     }
 }
