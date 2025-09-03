@@ -5,6 +5,7 @@ using ProjectDashboardAPI.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectDashboardAPI.Controllers
 {
@@ -138,32 +139,84 @@ namespace ProjectDashboardAPI.Controllers
             return Ok(task);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] CreateProjectTaskDto dto)
+        [HttpPatch("{projectId}/{taskId}")]
+        public IActionResult PatchTask(int projectId, int taskId, [FromBody] PatchProjectTaskDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var task = _context.ProjectTasks.Find(id);
+            var project = _context.Projects.Find(projectId);
+            if (project == null)
+                return NotFound();
+
+            var task = _context.ProjectTasks
+                .Include(t => t.TaskUsers)
+                .FirstOrDefault(t => t.Id == taskId && t.ProjectId == projectId);
+
             if (task == null)
                 return NotFound();
 
-            task.Title = dto.Title;
-            task.Description = dto.Description;
-            task.Deadline = dto.Deadline;
-            task.ProjectId = dto.ProjectId;
-            task.TaskUsers = dto.TaskUsers.Select(userId => new TaskUser { UserId = userId }).ToList();
+            if (!string.IsNullOrEmpty(dto.Title))
+                task.Title = dto.Title;
+
+            if (!string.IsNullOrEmpty(dto.Description))
+                task.Description = dto.Description;
+
+            if (dto.Deadline.HasValue)
+                task.Deadline = dto.Deadline.Value;
+
+            if (dto.Status.HasValue)
+                task.Status = dto.Status.Value;
+
+            if (dto.TaskUsers != null)
+                {
+                    task.TaskUsers.Clear();
+
+                    foreach (var userId in dto.TaskUsers)
+                    {
+                        task.TaskUsers.Add(new TaskUser
+                        {
+                            UserId = userId,
+                            TaskId = task.Id,
+                        });
+                    }
+                }
 
             _context.SaveChanges();
 
-            return NoContent();
+            var updatedTask = _context.ProjectTasks
+                .Include(t => t.TaskUsers)
+                    .ThenInclude(tu => tu.User)
+                .FirstOrDefault(t => t.Id == task.Id);
+
+            var taskDto = new ProjectTaskDto
+            {
+                Id = updatedTask.Id,
+                ProjectId = updatedTask.ProjectId,
+                Title = updatedTask.Title,
+                Description = updatedTask.Description,
+                Status = updatedTask.Status,
+                Deadline = updatedTask.Deadline,
+                CreatedAt = updatedTask.CreatedAt,
+                ProjectName = project.Name,
+                TaskUsers = updatedTask.TaskUsers
+                    .Select(tu => new TaskUserDto
+                    {
+                        UserId = tu.UserId,
+                        TaskId = tu.TaskId,
+                        Name = tu.User.Name
+                    }).ToList()
+            };
+
+            return Ok(taskDto);
 
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{projectId}/{taskId}")]
+        public IActionResult Delete(int projectId, int taskId)
         {
-            var task = _context.ProjectTasks.Find(id);
+            var task = _context.ProjectTasks
+                .FirstOrDefault(t => t.Id == taskId && t.ProjectId == projectId);
             if (task == null)
                 return NotFound();
 
@@ -252,6 +305,26 @@ namespace ProjectDashboardAPI.Controllers
             _context.SaveChanges();
 
             return NoContent();
+        }
+
+        [HttpGet("{projectId}/getusers")]
+        public IActionResult GetProjectUsers(int projectId)
+        {
+            var projectUsers = _context.Projects
+                .Where(p => p.Id == projectId)
+                .SelectMany(p => p.ProjectUsers)
+                        .Select(pu => new ProjectUserDto
+                        {
+                            UserId = pu.UserId,
+                            UserName = pu.User.Name,
+                        })
+                        .ToList();
+
+            if (!projectUsers.Any())
+                return NotFound();
+
+            return Ok(projectUsers);
+
         }
     }
 }
