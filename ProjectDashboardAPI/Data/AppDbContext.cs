@@ -26,7 +26,10 @@ namespace ProjectDashboardAPI.Data
 
         public DbSet<TaskUser> TaskUsers { get; set; }
         public DbSet<TaskComment> TaskComments { get; set; }
-
+        
+        public DbSet<CommunityPost> CommunityPosts { get; set; }
+        public DbSet<CommunityApplication> CommunityApplications { get; set; }
+        public DbSet<CommunityComment> CommunityComments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -40,6 +43,8 @@ namespace ProjectDashboardAPI.Data
                         v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
                 }
             }
+
+            // psql -U appuser -d projectdashboard -h localhost
 
             base.OnModelCreating(modelBuilder);
 
@@ -82,11 +87,51 @@ namespace ProjectDashboardAPI.Data
                 .HasOne(tc => tc.ProjectTask)
                 .WithMany(t => t.TaskComments)
                 .HasForeignKey(tc => tc.TaskId);
-                
+
             modelBuilder.Entity<TaskComment>()
                 .HasOne(tc => tc.User)
                 .WithMany(u => u.TaskComments)
                 .HasForeignKey(tc => tc.UserId);
+
+            modelBuilder.Entity<CommunityPost>()
+                .HasOne(cp => cp.CreatedBy)
+                .WithMany(u => u.CommunityPosts)
+                .HasForeignKey(cp => cp.CreatedById);
+
+            modelBuilder.Entity<CommunityPost>()
+                .HasOne(cp => cp.ProjectTask)
+                .WithMany()
+                .HasForeignKey(cp => cp.ProjectTaskId);
+
+            modelBuilder.Entity<CommunityApplication>()
+                .HasOne(ca => ca.Post)
+                .WithMany(p => p.Applications)
+                .HasForeignKey(ca => ca.PostId);
+
+            modelBuilder.Entity<CommunityApplication>()
+                .HasOne(cp => cp.Applicant)
+                .WithMany(u => u.CommunityApplications)
+                .HasForeignKey(cp => cp.ApplicantId);
+
+            modelBuilder.Entity<CommunityApplication>()
+                .HasOne(ca => ca.ApprovedBy)
+                .WithMany()
+                .HasForeignKey(ca => ca.ApproverId);
+
+            modelBuilder.Entity<CommunityComment>()
+                .HasOne(c => c.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId);
+
+            modelBuilder.Entity<CommunityComment>()
+                .HasOne(c => c.Author)
+                .WithMany(u => u.CommunityComments)
+                .HasForeignKey(c => c.AuthorId);
+
+            modelBuilder.Entity<CommunityComment>()
+                .HasOne(c => c.Parent)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentId);
 
             // modelBuilder.Entity<ProjectTask>()
             //     .HasOne<User>()

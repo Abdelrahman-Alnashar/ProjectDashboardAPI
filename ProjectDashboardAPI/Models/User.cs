@@ -26,6 +26,9 @@ namespace ProjectDashboardAPI.Models
 		public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 		public ICollection<TaskUser> TaskUsers { get; set; } = new List<TaskUser>();
 		public ICollection<TaskComment> TaskComments { get; set; } = new List<TaskComment>();
+		public ICollection<CommunityPost> CommunityPosts { get; set; } = new List<CommunityPost>();
+		public ICollection<CommunityApplication> CommunityApplications { get; set; } = new List<CommunityApplication>();
+		public ICollection<CommunityComment> CommunityComments { get; set; } = new List<CommunityComment>();
 
     }
 }
