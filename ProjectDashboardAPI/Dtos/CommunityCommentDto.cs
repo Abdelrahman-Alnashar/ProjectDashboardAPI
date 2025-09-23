@@ -6,5 +6,7 @@ namespace ProjectDashboardAPI.Dtos
         public string Body { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserDto CreatedBy { get; set; }
+
+        public List<CommunityCommentDto> Replies { get; set; } = new();
     }
 }

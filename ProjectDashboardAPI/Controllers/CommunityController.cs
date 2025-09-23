@@ -230,19 +230,38 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         // POST: api/community/posts/5/comments
-        [HttpPost("posts/{id}/comments")]
-        public async Task<ActionResult<CommunityComment>> AddComment(int id, [FromBody] CommunityComment comment)
+        [HttpPost("posts/{postId}/comments")]
+        public async Task<ActionResult<CommunityComment>> AddComment(
+            int postId,
+            [FromBody] CreatePostCommentDto dto)
         {
-            if (!await _context.CommunityPosts.AnyAsync(p => p.Id == id))
+            var postExists = await _context.CommunityPosts.AnyAsync(p => p.Id == postId);
+            if (!postExists)
                 return NotFound();
 
-            comment.PostId = id;
-            comment.CreatedAt = DateTime.UtcNow;
+            var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim);
+
+            var comment = new CommunityComment
+            {
+                PostId = postId,
+                AuthorId = userId,
+                Comment = dto.Comment,
+                ParentId = dto.ParentId,
+                CreatedAt = DateTime.UtcNow
+            };
 
             _context.CommunityComments.Add(comment);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetComments), new { id = id }, comment);
+            return CreatedAtAction(
+                nameof(GetComments),
+                new { postId = postId },
+                comment
+            );
         }
 
         // GET: api/community/posts/5/comments
@@ -261,12 +280,32 @@ namespace ProjectDashboardAPI.Controllers
                     {
                         Id = c.Author.Id,
                         Name = c.Author.Name
-                    }
+                    },
+                    // Replies will be filled later
                 })
                 .ToListAsync();
 
-            return Ok(comments);
+            var commentDict = comments.ToDictionary(c => c.Id);
+
+            List<CommunityCommentDto> topLevelComments = new();
+
+            foreach (var comment in comments)
+            {
+                var entity = await _context.CommunityComments.FindAsync(comment.Id);
+
+                if (entity.ParentId.HasValue && commentDict.ContainsKey(entity.ParentId.Value))
+                {
+                    commentDict[entity.ParentId.Value].Replies.Add(comment);
+                }
+                else
+                {
+                    topLevelComments.Add(comment);
+                }
+            }
+
+            return Ok(topLevelComments);
         }
+
 
     }
 }
